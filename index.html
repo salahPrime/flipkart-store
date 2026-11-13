@@ -65,6 +65,11 @@
 .login-submit{width:100%;height:48px;border:0;border-radius:2px;background:#ffdf00;color:#222;font-size:15px;font-weight:700;cursor:pointer}
 .login-submit:disabled{background:#c6c6c6;color:#fff;cursor:not-allowed}
 .login-status{min-height:18px;margin:12px 0 0;color:#555;font-size:13px;line-height:1.4}
+.auth-name-wrap[hidden],#authLogout[hidden],#forgotPassword[hidden],#loginForm[hidden]{display:none}
+.auth-switch{margin:18px auto 0}
+.login-field-wrap+.login-field-wrap{margin-top:22px}
+.login-field input{padding-left:0}
+.login-field input:focus{outline:0;box-shadow:none}
 @media(max-width:700px){
   .login-dialog{width:min(480px,calc(100vw - 20px));max-height:calc(100vh - 20px);border-radius:8px}
   .login-card{display:block;min-height:0}
@@ -92,16 +97,26 @@
         <h3 id="loginHeading">Log in for the best experience</h3>
         <p class="login-prompt" id="loginPrompt">Enter your phone number to continue</p>
         <form id="loginForm" novalidate>
-          <div class="login-field-wrap">
-            <label class="login-field-label" id="loginFieldLabel" for="loginContact">Phone Number</label>
-            <div class="login-field"><span class="login-country" id="loginCountryCode" aria-hidden="true">+91⌄</span><input id="loginContact" name="phone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="15" placeholder="10-digit mobile number" required></div>
+          <div class="login-field-wrap auth-name-wrap" id="authNameWrap" hidden>
+            <label class="login-field-label" for="authName">Full name</label>
+            <div class="login-field"><input id="authName" name="name" type="text" autocomplete="name" maxlength="100" placeholder="Your full name"></div>
           </div>
-          <button class="login-mode-toggle" id="loginModeToggle" type="button">Use Email-ID</button>
-          <p class="login-demo-note">Demo only — verification is not connected.</p>
-          <p class="login-terms">By continuing, you confirm that you are above 18 years of age, and agree to the store's <span>Terms of Use</span> and <span>Privacy Policy</span>.</p>
-          <button class="login-submit" id="loginContinue" type="submit" disabled>Continue</button>
+          <div class="login-field-wrap">
+            <label class="login-field-label" for="authEmail">Email address</label>
+            <div class="login-field"><input id="authEmail" name="email" type="email" autocomplete="email" maxlength="254" placeholder="you@example.com" required></div>
+          </div>
+          <div class="login-field-wrap">
+            <label class="login-field-label" for="authPassword">Password</label>
+            <div class="login-field"><input id="authPassword" name="password" type="password" autocomplete="current-password" minlength="8" maxlength="128" placeholder="At least 8 characters" required></div>
+          </div>
+          <button class="login-mode-toggle" id="forgotPassword" type="button">Forgot password?</button>
+          <p class="login-demo-note" id="authHint">Your password is securely hashed. Email verification is required.</p>
+          <p class="login-terms">By continuing, you agree to the store's <span>Terms of Use</span> and <span>Privacy Policy</span>.</p>
+          <button class="login-submit" id="loginContinue" type="submit">Log in</button>
+          <button class="login-mode-toggle auth-switch" id="loginModeToggle" type="button">New customer? Create an account</button>
           <p class="login-status" id="loginStatus" role="status" aria-live="polite"></p>
         </form>
+        <button class="login-submit" id="authLogout" type="button" hidden>Log out</button>
       </div>
     </section>
   </div>
@@ -144,16 +159,99 @@ favorite.addEventListener('click',event=>{event.preventDefault();let saved=[];tr
 document.getElementById('productSearch').addEventListener('keydown',event=>{if(event.key!=='Enter')return;const query=event.currentTarget.value.trim().toLowerCase();if(!query)return;const match=PRODUCT.name.toLowerCase().includes(query)||'highlander polo t shirt clothing'.includes(query);if(match){document.querySelector('.right').scrollIntoView({behavior:'smooth',block:'start'});notify('Showing the matching product.')}else notify('No matching products in this demo catalog.')});
 function loadAdminProductGallery(){try{const saved=localStorage.getItem('flipkartAdminDemoV2');if(!saved)return;const data=JSON.parse(saved),products=data&&Array.isArray(data.products)?data.products:[],product=products.find(item=>item.sku==='HIG-PL-BRN-001');if(!product||!Array.isArray(product.images))return;const images=product.images.filter(source=>typeof source==='string'&&(/^data:image\/(jpeg|png|webp);base64,/i.test(source)||/^https?:\/\//i.test(source))).slice(0,4);if(!images.length)return;document.querySelectorAll('.gallery .photo').forEach((photo,index)=>{if(index>=images.length){photo.style.display='none';return}photo.style.display='';const image=photo.querySelector('img');image.src=images[index];image.alt='HIGHLANDER shirt product photo '+(index+1)})}catch(error){console.warn('Could not load product photos saved by the admin demo.',error)}}
 loadAdminProductGallery();updateCartCount();updateFavorite();
-const loginDialog=document.getElementById('loginDialog'),loginTrigger=document.getElementById('loginTrigger'),loginForm=document.getElementById('loginForm'),loginContact=document.getElementById('loginContact'),loginContinue=document.getElementById('loginContinue'),loginStatus=document.getElementById('loginStatus');let loginUsesEmail=false;
-function validLoginContact(){const value=loginContact.value.trim();return loginUsesEmail?value!==''&&loginContact.validity.valid:/^[\d\s()-]+$/.test(value)&&value.replace(/\D/g,'').length===10}
-function updateLoginButton(){loginContinue.disabled=!validLoginContact();loginStatus.textContent=''}
-function setLoginMode(useEmail,focus=false){loginUsesEmail=useEmail;loginContact.value='';loginContact.type=useEmail?'email':'tel';loginContact.name=useEmail?'email':'phone';loginContact.inputMode=useEmail?'email':'numeric';loginContact.autocomplete=useEmail?'email':'tel';loginContact.maxLength=useEmail?254:15;loginContact.placeholder=useEmail?'Email address':'10-digit mobile number';document.getElementById('loginCountryCode').hidden=useEmail;document.getElementById('loginFieldLabel').textContent=useEmail?'Email Address':'Phone Number';document.getElementById('loginPrompt').textContent=useEmail?'Enter your email address to continue':'Enter your phone number to continue';document.getElementById('loginModeToggle').textContent=useEmail?'Use Phone Number':'Use Email-ID';updateLoginButton();if(focus)loginContact.focus()}
-loginTrigger.addEventListener('click',()=>{setLoginMode(false);loginDialog.showModal();loginContact.focus()});
+const loginDialog=document.getElementById('loginDialog');
+const loginTrigger=document.getElementById('loginTrigger');
+const loginForm=document.getElementById('loginForm');
+const loginStatus=document.getElementById('loginStatus');
+const authName=document.getElementById('authName');
+const authEmail=document.getElementById('authEmail');
+const authPassword=document.getElementById('authPassword');
+const authNameWrap=document.getElementById('authNameWrap');
+const authLogout=document.getElementById('authLogout');
+const authSubmit=document.getElementById('loginContinue');
+const authSwitch=document.getElementById('loginModeToggle');
+const forgotPassword=document.getElementById('forgotPassword');
+let authMode='login',currentSession=null;
+async function authRequest(path,body){
+  const response=await fetch('/api/auth/'+path,{method:body?'POST':'GET',credentials:'include',headers:body?{'Content-Type':'application/json'}:undefined,body:body?JSON.stringify(body):undefined});
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(data.message||data.error?.message||'Authentication request failed. Please try again.');
+  return data;
+}
+function setAuthMode(mode){
+  authMode=mode;loginForm.hidden=!!currentSession;authLogout.hidden=!currentSession;
+  authNameWrap.hidden=mode!=='signup';forgotPassword.hidden=mode!=='login';
+  document.getElementById('loginTitle').textContent=mode==='signup'?'Create account':mode==='forgot'?'Reset password':'Login';
+  document.getElementById('loginHeading').textContent=mode==='signup'?'Join the store':mode==='forgot'?'Reset your password':'Log in for the best experience';
+  document.getElementById('loginPrompt').textContent=mode==='signup'?'Create your customer account with your email address':mode==='forgot'?'Enter your email and we will send a reset link':'Enter your email address and password';
+  authPassword.hidden=mode==='forgot';authPassword.required=mode!=='forgot';
+  authPassword.autocomplete=mode==='signup'?'new-password':'current-password';
+  authSubmit.textContent=mode==='signup'?'Create account':mode==='forgot'?'Send reset link':'Log in';
+  authSwitch.textContent=mode==='signup'?'Already registered? Log in':'New customer? Create an account';
+  authSwitch.hidden=mode==='forgot';loginStatus.textContent='';
+  document.getElementById('authHint').textContent=mode==='signup'?'We will email you a verification link before your account can be used.':mode==='forgot'?'For security, follow the private link sent to your email.':'Your account is protected by secure password hashing and server-side sessions.';
+  if(mode!=='forgot')authPassword.value='';
+}
+async function refreshCustomerSession(){
+  try{
+    const data=await authRequest('get-session');
+    currentSession=data?.user?data:null;
+    loginTrigger.innerHTML='<b class="usericon" aria-hidden="true">●</b> '+(currentSession?'Account':'Login')+' ⌄';
+  }catch{currentSession=null}
+}
+loginTrigger.addEventListener('click',async()=>{
+  await refreshCustomerSession();
+  setAuthMode('login');
+  if(currentSession){
+    loginForm.hidden=true;authLogout.hidden=false;
+    document.getElementById('loginTitle').textContent='Your account';
+    document.getElementById('loginHeading').textContent=currentSession.user.name||'Customer account';
+    document.getElementById('loginPrompt').textContent=currentSession.user.email;
+    loginStatus.textContent='You are signed in.';
+  }else{
+    loginForm.hidden=false;authLogout.hidden=true;authEmail.focus();
+  }
+  loginDialog.showModal();
+});
 document.getElementById('loginClose').addEventListener('click',()=>loginDialog.close());
-document.getElementById('loginModeToggle').addEventListener('click',()=>setLoginMode(!loginUsesEmail,true));
-loginContact.addEventListener('input',updateLoginButton);
-loginForm.addEventListener('submit',event=>{event.preventDefault();if(!validLoginContact()){loginStatus.textContent=loginUsesEmail?'Enter a valid email address.':'Enter a valid 10-digit phone number.';return}loginStatus.textContent='Demo only: no account was created and no verification code was sent.'});
 loginDialog.addEventListener('click',event=>{if(event.target===loginDialog)loginDialog.close()});
-loginDialog.addEventListener('close',()=>{loginForm.reset();setLoginMode(false)});
+loginDialog.addEventListener('close',()=>{loginForm.reset();setAuthMode('login')});
+authSwitch.addEventListener('click',()=>setAuthMode(authMode==='signup'?'login':'signup'));
+forgotPassword.addEventListener('click',()=>setAuthMode('forgot'));
+loginForm.addEventListener('submit',async event=>{
+  event.preventDefault();loginStatus.textContent='';authSubmit.disabled=true;
+  try{
+    const email=authEmail.value.trim().toLowerCase(),password=authPassword.value;
+    if(!email||!authEmail.validity.valid)throw new Error('Enter a valid email address.');
+    if(authMode==='signup'){
+      const name=authName.value.trim();
+      if(name.length<2)throw new Error('Enter your name.');
+      if(password.length<8)throw new Error('Use a password with at least 8 characters.');
+      await authRequest('sign-up/email',{name,email,password,callbackURL:location.origin+'/'});
+      loginStatus.textContent='Account created. Check your email and verify your address before logging in.';
+      setAuthMode('login');loginStatus.textContent='Account created. Check your inbox for the verification link before logging in.';
+    }else if(authMode==='forgot'){
+      await authRequest('request-password-reset',{email,redirectTo:location.origin+'/'});
+      loginStatus.textContent='If an account exists for that email, a password-reset link has been sent.';
+    }else{
+      await authRequest('sign-in/email',{email,password,callbackURL:location.origin+'/'});
+      await refreshCustomerSession();
+      if(!currentSession)throw new Error('Sign-in did not create a session. Verify your email and try again.');
+      loginStatus.textContent='You are signed in successfully.';
+      loginForm.hidden=true;authLogout.hidden=false;
+      document.getElementById('loginTitle').textContent='Your account';
+      document.getElementById('loginHeading').textContent=currentSession.user.name||'Customer account';
+      document.getElementById('loginPrompt').textContent=currentSession.user.email;
+    }
+  }catch(error){loginStatus.textContent=error.message||'Could not complete the request.'}
+  finally{authSubmit.disabled=false}
+});
+authLogout.addEventListener('click',async()=>{
+  authLogout.disabled=true;
+  try{await authRequest('sign-out',{});currentSession=null;loginTrigger.innerHTML='<b class="usericon" aria-hidden="true">●</b> Login ⌄';loginDialog.close();notify('You have been logged out.')}
+  catch(error){loginStatus.textContent=error.message||'Could not log out.'}
+  finally{authLogout.disabled=false}
+});
+refreshCustomerSession();
 </script>
 </body></html>
