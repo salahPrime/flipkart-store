@@ -107,7 +107,7 @@
           </div>
           <div class="login-field-wrap">
             <label class="login-field-label" for="authPassword">Password</label>
-            <div class="login-field"><input id="authPassword" name="password" type="password" autocomplete="current-password" minlength="8" maxlength="128" placeholder="At least 8 characters" required></div>
+            <div class="login-field"><input id="authPassword" name="password" type="password" autocomplete="current-password" minlength="10" maxlength="128" placeholder="At least 10 characters" required></div>
           </div>
           <button class="login-mode-toggle" id="forgotPassword" type="button">Forgot password?</button>
           <p class="login-demo-note" id="authHint">Your password is securely hashed. Email verification is required.</p>
@@ -226,7 +226,7 @@ loginForm.addEventListener('submit',async event=>{
     if(authMode==='signup'){
       const name=authName.value.trim();
       if(name.length<2)throw new Error('Enter your name.');
-      if(password.length<8)throw new Error('Use a password with at least 8 characters.');
+      if(password.length<10)throw new Error('Use a password with at least 10 characters.');
       await authRequest('sign-up/email',{name,email,password,callbackURL:location.origin+'/'});
       loginStatus.textContent='Account created. Check your email and verify your address before logging in.';
       setAuthMode('login');loginStatus.textContent='Account created. Check your inbox for the verification link before logging in.';
