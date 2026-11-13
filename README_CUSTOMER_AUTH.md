@@ -29,7 +29,7 @@ Use the production domain for Production and the matching deployment origin for 
 
 ## 3. Email provider
 
-Verify the sender domain in Resend and configure its DNS records before testing registration or password reset. Verification and reset links are sent by the server; if the email provider rejects a message, the API reports an error instead of pretending that the email was sent.
+Verify the sender domain in Resend and configure its DNS records before testing registration or password reset. Verification and reset links are sent by the server. Better Auth logs failures from the email callback; if a verification message does not arrive, try signing in again to trigger a fresh verification email and inspect Vercel function logs.
 
 ## 4. Test before launch
 
