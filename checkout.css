@@ -13,3 +13,11 @@
 .cart-empty{padding:25px 4px;color:#666;text-align:center}
 .cart-empty a{color:#1558d6}
 @media(max-width:520px){.demo-warning{font-size:12px}.checkout-item img{width:68px;height:88px}.checkout-item strong{font-size:14px}.steps{padding:0 4%}.step label{font-size:11px}.checkout-header{padding:0 12px}.secure{font-size:11px}}
+
+.customer-form{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px;margin-top:15px}
+.customer-form label{display:block;font-size:14px;font-weight:600;color:#444}
+.customer-form input,.customer-form textarea{display:block;width:100%;margin-top:7px;padding:12px;border:1px solid #cfd3da;border-radius:6px;background:#fff;font:inherit;font-weight:400;color:#222}
+.customer-form textarea{min-height:84px;resize:vertical}
+.customer-form label:nth-child(3),.customer-form label:nth-child(5){grid-column:1/-1}
+#continue:disabled{opacity:.5;cursor:not-allowed}
+@media(max-width:520px){.customer-form{grid-template-columns:1fr;gap:12px}.customer-form label:nth-child(3),.customer-form label:nth-child(5){grid-column:auto}.customer-form input,.customer-form textarea{font-size:16px}}
