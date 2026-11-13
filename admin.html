@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Store Admin | Flipkart</title>
+<link rel="icon" type="image/png" href="flipkart-cart-logo.png">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand"><img class="brand-mark" src="flipkart-cart-logo.png" alt=""> Flipkart Admin</div>
+    <div class="nav-group-title">Store</div>
+    <nav class="nav" aria-label="Store administration">
+      <button class="active" data-page="dashboard"><span class="nav-icon">▦</span>Dashboard</button>
+      <button data-page="products"><span class="nav-icon">□</span>Products &amp; catalog</button>
+      <button data-page="inventory"><span class="nav-icon">▤</span>Inventory</button>
+      <button data-page="orders"><span class="nav-icon">▣</span>Orders &amp; fulfillment</button>
+      <button data-page="customers"><span class="nav-icon">♙</span>Customers / CRM</button>
+      <button data-page="marketing"><span class="nav-icon">％</span>Marketing</button>
+      <button data-page="finance"><span class="nav-icon">₹</span>Finance &amp; tax</button>
+      <button data-page="analytics"><span class="nav-icon">↗</span>Analytics</button>
+    </nav>
+    <div class="nav-group-title">System</div>
+    <nav class="nav" aria-label="System administration">
+      <button data-page="cms"><span class="nav-icon">▧</span>Pages / CMS</button>
+      <button data-page="roles"><span class="nav-icon">♧</span>Roles &amp; access</button>
+      <button data-page="audit"><span class="nav-icon">◷</span>Audit log</button>
+    </nav>
+    <div class="admin-user"><span class="avatar">A</span><span><strong>Super Admin</strong><small>Full access · Demo</small></span></div>
+  </aside>
+  <main class="main">
+    <header class="topbar"><div class="breadcrumb">Store administration&nbsp; / &nbsp;<strong id="crumb">Dashboard</strong></div><div class="top-actions"><span class="demo-chip">DEMO MODE</span><a class="view-store" href="index.html">↗ &nbsp;View store</a></div></header>
+    <div class="content" id="content" tabindex="-1"></div>
+  </main>
+</div>
+<dialog class="dialog" id="dialog"><div class="dialog-head"><h2 id="dialogTitle"></h2><button class="button small" type="button" data-action="close-dialog" aria-label="Close dialog">✕</button></div><div class="dialog-body" id="dialogBody"></div></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+const STORE_KEY='flipkartAdminDemoV2';
+const DEFAULT_PRODUCT_IMAGES=[
+  'https://rukminim2.flixcart.com/image/800/1000/xif0q/t-shirt/v/k/l/m-brp-002-nan-original-imahnzrszssm4sbp.jpeg?q=90',
+  'https://img.tatacliq.com/images/i29/1348Wx2000H/MP000000029810478_1348Wx2000H_202601210159541.jpeg',
+  'https://assets.ajio.com/medias/sys_master/root1/20260217/cYoo/699402bacbfa0d5608096341/-1117Wx1400H-467148035-brown-MODEL5.jpg',
+  'https://images.asos-media.com/products/asos-design-muscle-fit-knit-ribbed-polo-t-shirt-in-brown/208023543-1-brown?%24n_640w%24=&fit=constrain&wid=513'
+];
+const MAX_PRODUCT_IMAGES=4;
+const defaultState={
+  products:[{id:'p-101',name:'HIGHLANDER Men Self Design Polo Neck Pure Cotton Brown T-Shirt',sku:'HIG-PL-BRN-001',category:'Clothing',price:684,variants:'S, M, L, XL',stock:8,threshold:10,images:DEFAULT_PRODUCT_IMAGES}],
+  orders:[
+    {id:'FK-10482',customer:'Aarav Sharma',email:'aarav@example.com',date:'2026-11-12',total:684,status:'Processing',returnRequested:false},
+    {id:'FK-10481',customer:'Maya Iyer',email:'maya@example.com',date:'2026-11-12',total:1299,status:'Pending',returnRequested:false},
+    {id:'FK-10480',customer:'Rohan Das',email:'rohan@example.com',date:'2026-11-11',total:684,status:'Shipped',returnRequested:false},
+    {id:'FK-10477',customer:'Isha Kapoor',email:'isha@example.com',date:'2026-11-10',total:684,status:'Return requested',returnRequested:true}
+  ],
+  customers:[
+    {id:'C-201',name:'Aarav Sharma',email:'aarav@example.com',phone:'+91 98765 43210',status:'Active'},
+    {id:'C-202',name:'Maya Iyer',email:'maya@example.com',phone:'+91 98765 43211',status:'Active'},
+    {id:'C-203',name:'Rohan Das',email:'rohan@example.com',phone:'+91 98765 43212',status:'Active'},
+    {id:'C-204',name:'Isha Kapoor',email:'isha@example.com',phone:'+91 98765 43213',status:'Active'}
+  ],
+  promos:[{id:'pr-1',code:'WELCOME10',type:'Percent',value:10,uses:42,active:true},{id:'pr-2',code:'FESTIVE100',type:'Fixed',value:100,uses:18,active:true}],
+  banners:[{id:'b-1',title:'Festive savings are here',link:'Offers',active:true},{id:'b-2',title:'Discover new arrivals',link:'Clothing',active:false}],
+  carts:[{id:'c-1',customer:'Neha Verma',email:'neha@example.com',items:2,total:1368,age:'2 hours ago',sent:false},{id:'c-2',customer:'Kabir Rao',email:'kabir@example.com',items:1,total:684,age:'Yesterday',sent:false}],
+  settings:{gateway:'Demo gateway',tax:18,zones:'Local: ₹40\\nRest of India: ₹70\\nExpress: ₹120'},
+  cms:{about:'We bring you quality products and great value, every day.',returns:'Items may be returned within 7 days of delivery, subject to product eligibility.',privacy:'We use customer information only to provide and improve our services.'},
+  roles:[{id:'r-1',name:'Catalog manager',permissions:['products','inventory','marketing']},{id:'r-2',name:'Fulfillment staff',permissions:['orders','inventory']}],
+  audit:[{time:'2026-11-12 08:00',actor:'Super Admin',action:'Signed in to admin demo'},{time:'2026-11-11 17:42',actor:'Super Admin',action:'Updated offer pricing'}],
+  finance:{currency:'INR',taxLabel:'GST'}
+};
+const pageNames={dashboard:'Dashboard',products:'Products & catalog',inventory:'Inventory & stock',orders:'Orders & fulfillment',customers:'Customers / CRM',marketing:'Marketing & promotions',finance:'Finance & tax settings',analytics:'Analytics & reports',cms:'Static pages / CMS',roles:'Roles & access control',audit:'Audit log'};
+const content=document.getElementById('content'),dialog=document.getElementById('dialog'),dialogTitle=document.getElementById('dialogTitle'),dialogBody=document.getElementById('dialogBody'),toast=document.getElementById('toast');
+let state=loadState(),toastTimer,editingProductImages=[];
+function loadState(){
+  try{
+    const saved=localStorage.getItem(STORE_KEY);
+    if(!saved)return structuredClone(defaultState);
+    const parsed=JSON.parse(saved);
+    return {...structuredClone(defaultState),...parsed,settings:{...defaultState.settings,...parsed.settings}};
+  }catch(error){
+    showToast('Saved demo data could not be loaded; defaults are shown.');
+    return structuredClone(defaultState);
+  }
+}
+function saveState(){
+  try{localStorage.setItem(STORE_KEY,JSON.stringify(state));return true}
+  catch(error){showToast('Could not save this change in browser storage.');return false}
+}
+function showToast(message){
+  toast.textContent=message;toast.style.display='block';clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>toast.style.display='none',2600);
+}
+function esc(value){return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))}
+function money(value){return '₹'+Number(value||0).toLocaleString('en-IN')}
+function logAction(action){state.audit.unshift({time:new Date().toLocaleString('en-IN'),actor:'Super Admin',action});state.audit=state.audit.slice(0,100);saveState()}
+function statusBadge(text){
+  const tone=['Delivered','Active','Published','Shipped','Processing','Refunded'].includes(text)?'live':text==='Pending'||text==='Return requested'||text==='Low stock'?'warn':text==='Cancelled'||text==='Disabled'?'off':'live';
+  return `<span class="status ${tone}"><span class="dot"></span>${esc(text)}</span>`;
+}
+function pageHead(title,description,actions=''){return `<div class="page-head"><div><h1>${title}</h1><p>${description}</p></div><div class="page-actions">${actions}</div></div>`}
+function panelHead(title,subtitle=''){return `<div class="panel-head"><div><h2>${title}</h2>${subtitle?`<div class="subtle">${subtitle}</div>`:''}</div></div>`}
+function tableEmpty(columns,message){return `<tr><td colspan="${columns}" class="empty">${message}</td></tr>`}
+function renderDashboard(){
+  const sales=state.orders.filter(order=>!['Cancelled','Refunded'].includes(order.status)).reduce((sum,order)=>sum+Number(order.total),0);
+  const low=state.products.filter(product=>Number(product.stock)<=Number(product.threshold)).length;
+  return `${pageHead('Store overview','Your store activity and attention items for today.')}
+    <div class="metrics">
+      <article class="metric"><div class="metric-top">Sales in sample orders <span class="metric-icon">₹</span></div><strong>${money(sales)}</strong><div class="change">Demo data <span>· not live payments</span></div></article>
+      <article class="metric"><div class="metric-top">Orders <span class="metric-icon">▣</span></div><strong>${state.orders.length}</strong><div class="change">Across all order statuses</div></article>
+      <article class="metric"><div class="metric-top">Products <span class="metric-icon">□</span></div><strong>${state.products.length}</strong><div class="change">${state.products.reduce((sum,p)=>sum+Number(p.stock),0)} units in stock</div></article>
+      <article class="metric"><div class="metric-top">Low-stock alerts <span class="metric-icon">!</span></div><strong>${low}</strong><div class="change">${low?'Review inventory':'Stock levels look good'}</div></article>
+    </div>
+    <div class="notice blue">This admin prototype stores its demo records in this browser. Payments, tax calculation, shipping, account changes, and customer emails are not connected to live services.</div>
+    <div class="grid-2">
+      <section class="panel">${panelHead('Recent orders','Open an order to process fulfillment or a return')}
+        <div class="table-wrap"><table><thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Status</th></tr></thead><tbody>
+        ${state.orders.slice(0,4).map(o=>`<tr><td class="mono">${esc(o.id)}</td><td>${esc(o.customer)}</td><td>${money(o.total)}</td><td>${statusBadge(o.status)}</td></tr>`).join('')||tableEmpty(4,'No orders yet')}</tbody></table></div>
+      </section>
+      <section class="panel">${panelHead('Catalog health','Products that need attention')}
+        ${low?state.products.filter(p=>Number(p.stock)<=Number(p.threshold)).map(p=>`<div class="notice red"><strong>${esc(p.name)}</strong><br>${p.stock} left · low-stock threshold is ${p.threshold}</div>`).join(''):'<div class="notice">No low-stock products to review.</div>'}
+        <button class="button" data-goto="inventory">Review inventory</button>
+      </section>
+    </div>`;
+}
+function renderProducts(){
+  return `${pageHead('Products & catalog','Manage products, variants, categories, and pricing.',`<button class="button" data-action="import-csv">Import CSV</button><input id="csvImport" type="file" accept=".csv,text/csv" hidden><button class="button" data-action="export-products">Export CSV</button><button class="button primary" data-action="add-product">＋ Add product</button>`)}
+    <section class="panel">${panelHead('Product catalog',`${state.products.length} product${state.products.length===1?'':'s'} in this demo catalog`)}
+    <div class="table-wrap"><table><thead><tr><th>Product / SKU</th><th>Category</th><th>Variants</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead><tbody>
+    ${state.products.map(p=>`<tr><td><div class="catalog-product">${Array.isArray(p.images)&&p.images[0]?`<img class="catalog-thumb" src="${esc(p.images[0])}" alt="">`:'<span class="catalog-thumb empty-thumb">No photo</span>'}<div>${esc(p.name)}<div class="subtle mono">${esc(p.sku)}</div></div></div></td><td>${esc(p.category)}</td><td>${esc(p.variants||'—')}</td><td>${money(p.price)}</td><td>${Number(p.stock)<=Number(p.threshold)?statusBadge('Low stock'):`${p.stock} units`}</td><td><button class="button small" data-action="edit-product" data-id="${esc(p.id)}">Edit</button> <button class="button small danger" data-action="delete-product" data-id="${esc(p.id)}">Delete</button></td></tr>`).join('')||tableEmpty(6,'No products. Add a product or import a CSV file.')}</tbody></table></div>
+    </section>
+    <div class="notice">CSV headers supported: <span class="mono">name,sku,category,price,variants,stock,threshold</span>. Import adds valid rows to this browser’s demo catalog.</div>`;
+}
+function renderInventory(){
+  const low=state.products.filter(p=>Number(p.stock)<=Number(p.threshold));
+  return `${pageHead('Inventory & stock control','Track stock levels, adjust quantities, and review low-stock alerts.')}
+    ${low.length?`<div class="notice red"><strong>${low.length} low-stock alert${low.length===1?'':'s'}.</strong> ${low.map(p=>esc(p.name)).join(' · ')}</div>`:'<div class="notice">All products are above their low-stock thresholds.</div>'}
+    <section class="panel">${panelHead('Stock levels','Manual adjustments are recorded in the audit log')}
+    <div class="table-wrap"><table><thead><tr><th>Product / SKU</th><th>Available</th><th>Low-stock alert at</th><th>Status</th><th>Action</th></tr></thead><tbody>
+    ${state.products.map(p=>`<tr><td>${esc(p.name)}<div class="subtle mono">${esc(p.sku)}</div></td><td><strong>${p.stock}</strong> units</td><td>${p.threshold}</td><td>${Number(p.stock)<=Number(p.threshold)?statusBadge('Low stock'):statusBadge('In stock')}</td><td><button class="button small" data-action="adjust-stock" data-id="${esc(p.id)}">Adjust stock</button></td></tr>`).join('')||tableEmpty(5,'No products in inventory.')}</tbody></table></div></section>`;
+}
+function renderOrders(){
+  const statuses=['Pending','Processing','Shipped','Delivered','Cancelled','Return requested','Refunded'];
+  return `${pageHead('Orders & fulfillment','Process orders, update statuses, and prepare shipping or return documents.')}
+    <div class="notice blue">Shipping labels and invoices below are downloadable demo documents; no carrier, payment, or refund service is connected.</div>
+    <section class="panel">${panelHead('All orders',`${state.orders.length} orders`)}
+    <div class="table-wrap"><table><thead><tr><th>Order</th><th>Date</th><th>Customer</th><th>Total</th><th>Status</th><th>Documents / returns</th></tr></thead><tbody>
+    ${state.orders.map(o=>`<tr><td class="mono">${esc(o.id)}</td><td>${esc(o.date)}</td><td>${esc(o.customer)}<div class="subtle">${esc(o.email)}</div></td><td>${money(o.total)}</td><td><select data-order-status="${esc(o.id)}">${statuses.map(s=>`<option ${o.status===s?'selected':''}>${s}</option>`).join('')}</select></td><td><button class="button small" data-action="shipping-label" data-id="${esc(o.id)}">Label</button> <button class="button small" data-action="invoice" data-id="${esc(o.id)}">Invoice</button> ${o.returnRequested?`<button class="button small danger" data-action="refund" data-id="${esc(o.id)}">Review return</button>`:''}</td></tr>`).join('')||tableEmpty(6,'No orders to show.')}</tbody></table></div></section>`;
+}
+function renderCustomers(){
+  return `${pageHead('Customers / CRM','Review customer details, order histories, and account controls.')}
+    <div class="notice blue">For safety, password moderation is represented by a password-reset request. Existing passwords are never displayed or changed directly here.</div>
+    <section class="panel">${panelHead('Customer directory',`${state.customers.length} demo customer accounts`)}
+    <label class="field-label" for="customerSearch">Search customers</label><input id="customerSearch" type="search" placeholder="Search name, email, or phone">
+    <div class="table-wrap" style="margin-top:14px"><table><thead><tr><th>Customer</th><th>Contact</th><th>Orders</th><th>Account</th><th>Moderation</th></tr></thead><tbody id="customerRows">
+    ${state.customers.map(c=>{const count=state.orders.filter(o=>o.email===c.email).length;return `<tr data-customer="${esc((c.name+' '+c.email+' '+c.phone).toLowerCase())}"><td>${esc(c.name)}<div class="subtle mono">${esc(c.id)}</div></td><td>${esc(c.email)}<div class="subtle">${esc(c.phone)}</div></td><td><button class="text-link" data-action="customer-history" data-id="${esc(c.id)}">${count} orders</button></td><td>${statusBadge(c.status)}</td><td><button class="button small" data-action="toggle-customer" data-id="${esc(c.id)}">${c.status==='Active'?'Disable':'Enable'}</button> <button class="button small" data-action="reset-password" data-id="${esc(c.id)}">Request reset</button></td></tr>`}).join('')||tableEmpty(5,'No customers yet')}</tbody></table></div></section>`;
+}
+function renderMarketing(){
+  return `${pageHead('Marketing & promotions','Manage promo codes, storefront banners, and abandoned-cart recovery.')}
+    <div class="notice blue">Reminder actions are recorded as demo events only; no customer email or notification is sent.</div>
+    <div class="grid-even">
+      <section class="panel">${panelHead('Promo codes','Discount rules shown in this prototype')}
+        <form class="inline-form" id="promoForm"><div><label class="field-label" for="promoCode">Code</label><input id="promoCode" name="code" required placeholder="SAVE10"></div><div><label class="field-label" for="promoType">Discount</label><select id="promoType" name="type"><option>Percent</option><option>Fixed</option></select></div><div><label class="field-label" for="promoValue">Value</label><input id="promoValue" name="value" type="number" min="1" required placeholder="10"></div><button class="button primary" type="submit">Add code</button></form>
+        <div class="table-wrap"><table><thead><tr><th>Code</th><th>Discount</th><th>Uses</th><th>Status</th><th></th></tr></thead><tbody>${state.promos.map(p=>`<tr><td class="mono">${esc(p.code)}</td><td>${p.type==='Percent'?`${p.value}%`:`${money(p.value)} off`}</td><td>${p.uses}</td><td>${statusBadge(p.active?'Active':'Paused')}</td><td><button class="button small" data-action="toggle-promo" data-id="${esc(p.id)}">${p.active?'Pause':'Enable'}</button> <button class="button small danger" data-action="delete-promo" data-id="${esc(p.id)}">Delete</button></td></tr>`).join('')||tableEmpty(5,'No promo codes created.')}</tbody></table></div>
+      </section>
+      <section class="panel">${panelHead('Storefront banners','Manage promotional messages on your store')}
+        <form class="inline-form" id="bannerForm"><div class="wide"><label class="field-label" for="bannerTitle">Banner message</label><input id="bannerTitle" name="title" required placeholder="Seasonal sale is live"></div><div><label class="field-label" for="bannerLink">Link label</label><input id="bannerLink" name="link" placeholder="Shop now"></div><button class="button primary" type="submit">Add banner</button></form>
+        ${state.banners.map(b=>`<div class="panel-head" style="border-top:1px solid #edf0f3;padding-top:12px;margin-bottom:10px"><div><strong>${esc(b.title)}</strong><div class="subtle">Link: ${esc(b.link)}</div></div><div><button class="button small" data-action="toggle-banner" data-id="${esc(b.id)}">${b.active?'Hide':'Show'}</button> <button class="button small danger" data-action="delete-banner" data-id="${esc(b.id)}">Delete</button></div></div>`).join('')||'<div class="empty">No banners configured.</div>'}
+      </section>
+    </div>
+    <section class="panel">${panelHead('Abandoned carts','Sample carts that have not completed checkout')}
+    <div class="table-wrap"><table><thead><tr><th>Customer</th><th>Items</th><th>Cart value</th><th>Last active</th><th>Recovery</th></tr></thead><tbody>${state.carts.map(c=>`<tr><td>${esc(c.customer)}<div class="subtle">${esc(c.email)}</div></td><td>${c.items}</td><td>${money(c.total)}</td><td>${esc(c.age)}</td><td>${c.sent?statusBadge('Reminder queued'): `<button class="button small" data-action="recover-cart" data-id="${esc(c.id)}">Queue reminder</button>`}</td></tr>`).join('')||tableEmpty(5,'No abandoned carts.')}</tbody></table></div></section>`;
+}
+function renderFinance(){
+  return `${pageHead('Finance & tax settings','Configure demo payment, tax, and shipping rules.')}
+    <div class="notice red"><strong>Integration notice:</strong> these settings are saved for the prototype only. No payment gateway is connected and tax/shipping totals are not applied to checkout.</div>
+    <div class="grid-even">
+      <section class="panel">${panelHead('Payment gateway','Test configuration — no real transactions')}
+        <form id="financeForm"><label class="field-label" for="gateway">Gateway provider</label><select id="gateway" name="gateway"><option ${state.settings.gateway==='Demo gateway'?'selected':''}>Demo gateway</option><option ${state.settings.gateway==='Razorpay (test mode)'?'selected':''}>Razorpay (test mode)</option><option ${state.settings.gateway==='Stripe (test mode)'?'selected':''}>Stripe (test mode)</option></select>
+        <label class="field-label" for="currency">Store currency</label><select id="currency" name="currency"><option ${state.finance.currency==='INR'?'selected':''}>INR</option><option ${state.finance.currency==='USD'?'selected':''}>USD</option></select>
+        <div class="notice" style="margin-top:13px;margin-bottom:0">Never enter live secret keys into this browser-only prototype.</div><div class="form-actions"><button class="button primary" type="submit">Save demo settings</button></div></form>
+      </section>
+      <section class="panel">${panelHead('Tax rules','Tax labels and standard rate')}
+        <form id="taxForm"><label class="field-label" for="taxLabel">Tax label</label><input id="taxLabel" name="taxLabel" value="${esc(state.finance.taxLabel)}" required><label class="field-label" for="taxRate">Default tax rate (%)</label><input id="taxRate" name="taxRate" type="number" min="0" max="100" step="0.1" value="${esc(state.settings.tax)}" required><div class="form-actions"><button class="button primary" type="submit">Save tax rules</button></div></form>
+      </section>
+    </div>
+    <section class="panel">${panelHead('Shipping rate zones','Set demo shipping prices by destination')}
+      <form id="shippingForm"><label class="field-label" for="zones">One zone per line in the format <span class="mono">Zone: ₹rate</span></label><textarea id="zones" name="zones">${esc(state.settings.zones)}</textarea><div class="form-actions"><button class="button primary" type="submit">Save shipping zones</button></div></form>
+    </section>`;
+}
+function renderAnalytics(){
+  const totals=state.orders.reduce((sum,o)=>sum+Number(o.total),0);
+  const best=[...state.products].sort((a,b)=>Number(b.stock)-Number(a.stock))[0];
+  return `${pageHead('Analytics & reports','Review sample sales metrics and export reports.',`<button class="button" data-action="export-report">Export report CSV</button>`)}
+    <div class="notice">Illustrative demo metrics, not live analytics or accounting data.</div>
+    <div class="metrics"><article class="metric"><div class="metric-top">Gross order value <span class="metric-icon">₹</span></div><strong>${money(totals)}</strong><div class="change">${state.orders.length} sample orders</div></article><article class="metric"><div class="metric-top">Average order value <span class="metric-icon">↗</span></div><strong>${money(state.orders.length?Math.round(totals/state.orders.length):0)}</strong><div class="change">Across sample records</div></article><article class="metric"><div class="metric-top">Refunds <span class="metric-icon">↶</span></div><strong>${state.orders.filter(o=>o.status==='Refunded').length}</strong><div class="change">Demo order statuses</div></article><article class="metric"><div class="metric-top">Active products <span class="metric-icon">□</span></div><strong>${state.products.length}</strong><div class="change">Catalog records</div></article></div>
+    <div class="grid-even"><section class="panel">${panelHead('Order value by order','Sample order totals')}<div>${state.orders.map(o=>`<div class="bar-row"><span class="mono">${esc(o.id)}</span><div class="bar"><i style="width:${Math.max(4,Math.min(100,Number(o.total)/15))}%"></i></div><strong>${money(o.total)}</strong></div>`).join('')||'<div class="empty">No order data.</div>'}</div></section>
+    <section class="panel">${panelHead('Top product','Ranked by available demo inventory')}${best?`<h3>${esc(best.name)}</h3><p class="muted">${best.stock} units available · ${money(best.price)} current price</p>`:'<div class="empty">No products available.</div>'}<button class="button" data-goto="products">View catalog</button></section></div>`;
+}
+function renderCms(){
+  const page=Object.keys(state.cms)[0];
+  return `${pageHead('Static pages / CMS','Edit the storefront’s informational page content.')}
+    <div class="notice blue">Content changes are stored locally for this admin demo and are not published to a live website.</div>
+    <section class="panel">${panelHead('Page editor','Select a page, update its content, then save')}
+    <form id="cmsForm"><label class="field-label" for="cmsPage">Page</label><select id="cmsPage" name="page">${Object.keys(state.cms).map(key=>`<option value="${esc(key)}" ${key===page?'selected':''}>${esc(key[0].toUpperCase()+key.slice(1))}</option>`).join('')}</select>
+    <label class="field-label" for="cmsContent">Page content</label><textarea id="cmsContent" name="body">${esc(state.cms[page]||'')}</textarea><div class="form-actions"><button class="button primary" type="submit">Save page content</button></div></form></section>`;
+}
+function renderRoles(){
+  const permissionNames={products:'Products',inventory:'Inventory',orders:'Orders',customers:'Customers',marketing:'Marketing',finance:'Finance',analytics:'Analytics',settings:'System settings'};
+  return `${pageHead('Roles & access control','Create demo sub-admin roles and assign access areas.')}
+    <div class="notice red"><strong>Prototype only:</strong> role permissions are stored as settings but do not authenticate users or enforce access control. A production RBAC system requires server-side authorization.</div>
+    <div class="grid-even"><section class="panel">${panelHead('Access roles','The Super Admin always has full access')}
+    <div class="panel-head" style="border-bottom:1px solid #edf0f3;padding-bottom:12px"><div><strong>Super Admin</strong><div class="subtle">Current account · full access to every section</div></div>${statusBadge('Full access')}</div>
+    ${state.roles.map(role=>`<div class="panel-head" style="border-bottom:1px solid #edf0f3;padding:12px 0;margin:0"><div><strong>${esc(role.name)}</strong><div class="chips" style="margin-top:7px">${role.permissions.map(p=>`<span class="chip">${esc(permissionNames[p]||p)}</span>`).join('')||'<span class="chip">No access assigned</span>'}</div></div><button class="button small danger" data-action="delete-role" data-id="${esc(role.id)}">Remove</button></div>`).join('')||'<div class="empty">No sub-admin roles created.</div>'}
+    </section><section class="panel">${panelHead('Create sub-admin role','Choose which sections this role can access')}
+      <form id="roleForm"><label class="field-label" for="roleName">Role name</label><input id="roleName" name="name" required placeholder="e.g. Support manager"><div class="check-row">${Object.entries(permissionNames).map(([key,label])=>`<label><input type="checkbox" name="permissions" value="${key}">${label}</label>`).join('')}</div><div class="form-actions"><button class="button primary" type="submit">Create role</button></div></form>
+    </section></div>`;
+}
+function renderAudit(){
+  return `${pageHead('Audit log','Review actions recorded by this browser-based admin demo.')}
+    <div class="notice blue">Demo actions are recorded on this device only. This log is not tamper-proof and is not a security audit system.</div>
+    <section class="panel">${panelHead('Recent activity',`${state.audit.length} recorded events`)}
+      <div class="table-wrap"><table><thead><tr><th>Time</th><th>Actor</th><th>Action</th></tr></thead><tbody>${state.audit.map(item=>`<tr><td>${esc(item.time)}</td><td>${esc(item.actor)}</td><td>${esc(item.action)}</td></tr>`).join('')||tableEmpty(3,'No activity has been recorded.')}</tbody></table></div>
+    </section>`;
+}
+const renderers={dashboard:renderDashboard,products:renderProducts,inventory:renderInventory,orders:renderOrders,customers:renderCustomers,marketing:renderMarketing,finance:renderFinance,analytics:renderAnalytics,cms:renderCms,roles:renderRoles,audit:renderAudit};
+let currentPage='dashboard';
+function navigate(name){
+  if(!renderers[name])return;
+  currentPage=name;document.getElementById('crumb').textContent=pageNames[name];
+  document.querySelectorAll('.nav button').forEach(button=>button.classList.toggle('active',button.dataset.page===name));
+  content.innerHTML=renderers[name]();
+  content.querySelectorAll('form').forEach(form=>form.addEventListener('submit',handleAdminSubmit));
+  content.focus({preventScroll:true});
+}
+function showDialog(title,html){dialogTitle.textContent=title;dialogBody.innerHTML=html;const form=dialogBody.querySelector('form');if(form)form.addEventListener('submit',handleAdminSubmit);dialog.showModal()}
+function renderProductImagePreview(){
+  const preview=dialogBody.querySelector('#productImagePreview');if(!preview)return;
+  preview.innerHTML=editingProductImages.map((src,index)=>`<div class="photo-preview-item"><img src="${esc(src)}" alt="Product photo ${index+1}"><button type="button" data-remove-product-image="${index}" aria-label="Remove photo ${index+1}">×</button></div>`).join('')||'<p class="photo-empty">No photos added yet.</p>';
+}
+function compressProductImage(file){
+  return new Promise((resolve,reject)=>{
+    if(!file.type.startsWith('image/')){reject(new Error('Choose an image file.'));return}
+    if(file.size>12*1024*1024){reject(new Error('Choose an image smaller than 12 MB.'));return}
+    const reader=new FileReader();
+    reader.onerror=()=>reject(new Error('Could not read the selected image.'));
+    reader.onload=()=>{
+      if(typeof reader.result!=='string'){reject(new Error('Could not read the selected image.'));return}
+      const image=new Image();
+      image.onerror=()=>reject(new Error('The selected file is not a readable image.'));
+      image.onload=()=>{
+        const scale=Math.min(1,1400/Math.max(image.naturalWidth,image.naturalHeight));
+        const canvas=document.createElement('canvas');
+        canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));
+        canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+        const context=canvas.getContext('2d');
+        if(!context){reject(new Error('Could not process the selected image.'));return}
+        context.fillStyle='#fff';context.fillRect(0,0,canvas.width,canvas.height);context.drawImage(image,0,0,canvas.width,canvas.height);
+        canvas.toBlob(blob=>{
+          if(!blob){reject(new Error('Could not optimize the selected image.'));return}
+          if(blob.size>350*1024){reject(new Error('This photo is still too large after optimization. Choose a smaller image.'));return}
+          const output=new FileReader();
+          output.onerror=()=>reject(new Error('Could not save the selected image.'));
+          output.onload=()=>typeof output.result==='string'?resolve(output.result):reject(new Error('Could not save the selected image.'));
+          output.readAsDataURL(blob);
+        },'image/jpeg',0.8);
+      };
+      image.src=reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function openProduct(id){
+  const product=state.products.find(item=>item.id===id);
+  const item=product||{id:'',name:'',sku:'',category:'Clothing',price:'',variants:'',stock:0,threshold:5};
+  editingProductImages=Array.isArray(item.images)?item.images.slice():item.sku==='HIG-PL-BRN-001'?DEFAULT_PRODUCT_IMAGES.slice():[];
+  showDialog(product?'Edit product':'Add product',`<form id="productForm"><input type="hidden" name="id" value="${esc(item.id)}"><div class="form-grid">
+    <div class="wide"><label class="field-label" for="productName">Product name</label><input id="productName" name="name" value="${esc(item.name)}" required></div>
+    <div><label class="field-label" for="productSku">SKU</label><input id="productSku" name="sku" value="${esc(item.sku)}" required></div>
+    <div><label class="field-label" for="productCategory">Category</label><input id="productCategory" name="category" value="${esc(item.category)}" required></div>
+    <div><label class="field-label" for="productPrice">Price (₹)</label><input id="productPrice" name="price" type="number" min="0" step="1" value="${esc(item.price)}" required></div>
+    <div><label class="field-label" for="productStock">Stock units</label><input id="productStock" name="stock" type="number" min="0" step="1" value="${esc(item.stock)}" required></div>
+    <div><label class="field-label" for="productThreshold">Low-stock threshold</label><input id="productThreshold" name="threshold" type="number" min="0" step="1" value="${esc(item.threshold)}" required></div>
+    <div><label class="field-label" for="productVariants">Variants</label><input id="productVariants" name="variants" value="${esc(item.variants)}" placeholder="S, M, L, XL"></div>
+    <div class="wide photo-uploader"><label class="field-label" for="productImages">Product photos</label><input id="productImages" type="file" accept="image/*" multiple><p class="photo-help">Add up to 4 photos. Images are optimized for this browser demo; remove a photo with ×.</p><div id="productImagePreview" class="photo-preview"></div></div></div>
+    <div class="form-actions"><button class="button" type="button" data-action="close-dialog">Cancel</button><button class="button primary" type="submit">Save product</button></div></form>`);
+  renderProductImagePreview();
+  dialogBody.querySelector('#productImages').addEventListener('change',async event=>{
+    const input=event.currentTarget,files=Array.from(input.files||[]),targetImages=editingProductImages;
+    if(editingProductImages.length+files.length>MAX_PRODUCT_IMAGES){showToast(`A product can have up to ${MAX_PRODUCT_IMAGES} photos. Remove a photo before adding another.`);input.value='';return}
+    const saveButton=dialogBody.querySelector('button[type="submit"]');input.disabled=true;saveButton.disabled=true;
+    try{
+      const photos=await Promise.all(files.map(compressProductImage));
+      if(editingProductImages!==targetImages||!dialog.open)return;
+      const totalChars=editingProductImages.concat(photos).reduce((total,photo)=>total+photo.length,0);
+      if(totalChars>1900000)throw new Error('The gallery is too large to save in this browser. Remove a photo or choose smaller images.');
+      editingProductImages.push(...photos);renderProductImagePreview();
+    }catch(error){showToast(error instanceof Error?error.message:'Could not process the selected images.')}
+    finally{input.disabled=false;saveButton.disabled=false;input.value=''}
+  });
+}
+dialogBody.addEventListener('click',event=>{
+  const removeButton=event.target.closest('[data-remove-product-image]');if(!removeButton)return;
+  editingProductImages.splice(Number(removeButton.dataset.removeProductImage),1);renderProductImagePreview();
+});
+function openStock(id){
+  const product=state.products.find(item=>item.id===id);if(!product)return;
+  showDialog('Adjust inventory',`<form id="stockForm"><input type="hidden" name="id" value="${esc(id)}"><div class="notice">Current stock for <strong>${esc(product.name)}</strong>: ${product.stock} units</div><label class="field-label" for="stockChange">Adjustment quantity</label><input id="stockChange" name="quantity" type="number" min="1" step="1" required><label class="field-label" for="stockDirection">Adjustment</label><select id="stockDirection" name="direction"><option value="add">Add stock</option><option value="remove">Remove stock</option></select><div class="form-actions"><button class="button" type="button" data-action="close-dialog">Cancel</button><button class="button primary" type="submit">Apply adjustment</button></div></form>`);
+}
+function downloadFile(filename,contents,type='text/plain'){
+  const url=URL.createObjectURL(new Blob([contents],{type}));
+  const link=document.createElement('a');link.href=url;link.download=filename;document.body.append(link);link.click();link.remove();URL.revokeObjectURL(url);
+}
+function csvCell(value){const text=String(value??'');return `"${text.replace(/"/g,'""')}"`}
+function exportProducts(){
+  const columns=['name','sku','category','price','variants','stock','threshold'];
+  downloadFile('product-catalog.csv',[columns.join(','),...state.products.map(product=>columns.map(key=>csvCell(product[key])).join(','))].join('\r\n'),'text/csv');
+}
+function parseCSV(text){
+  const rows=[];let row=[],cell='',quoted=false;
+  for(let i=0;i<text.length;i++){
+    const char=text[i];
+    if(char==='"'&&quoted&&text[i+1]==='"'){cell+='"';i++}
+    else if(char==='"')quoted=!quoted;
+    else if(char===','&&!quoted){row.push(cell);cell=''}
+    else if((char==='\n'||char==='\r')&&!quoted){if(char==='\r'&&text[i+1]==='\n')i++;row.push(cell);if(row.some(value=>value.trim()))rows.push(row);row=[];cell=''}
+    else cell+=char;
+  }
+  if(cell||row.length){row.push(cell);rows.push(row)}
+  return rows;
+}
+function documentHtml(title,body){return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title><style>body{font:16px Arial,sans-serif;padding:32px;color:#222}h1{font-size:22px}table{border-collapse:collapse;width:100%}td,th{padding:10px;border:1px solid #bbb;text-align:left}.label{border:2px solid #222;padding:20px;max-width:460px;margin:40px auto}</style></head><body>${body}</body></html>`}
+function orderDocument(id,invoice){
+  const order=state.orders.find(item=>item.id===id);if(!order)return;
+  const product=state.products[0];
+  const contentHtml=invoice
+    ?`<h1>Demo invoice</h1><p>Order ${esc(order.id)} · ${esc(order.date)}</p><p>Bill to: ${esc(order.customer)} · ${esc(order.email)}</p><table><tr><th>Item</th><th>Amount</th></tr><tr><td>${esc(product?.name||'Store order')}</td><td>${money(order.total)}</td></tr><tr><th>Total</th><th>${money(order.total)}</th></tr></table><p>This is a demo document, not a tax invoice.</p>`
+    :`<div class="label"><h1>Demo shipping label</h1><p><strong>Order:</strong> ${esc(order.id)}</p><p><strong>Ship to:</strong> ${esc(order.customer)}</p><p>${esc(order.email)}</p><p><strong>Carrier:</strong> Demo carrier · no shipment booked</p></div>`;
+  downloadFile(`${invoice?'invoice':'shipping-label'}-${order.id}.html`,documentHtml(invoice?'Demo invoice':'Demo shipping label',contentHtml),'text/html');
+  logAction(`${invoice?'Generated demo invoice':'Generated demo shipping label'} for ${order.id}`);
+}
+content.addEventListener('click',event=>{
+  const goto=event.target.closest('[data-goto]');if(goto){navigate(goto.dataset.goto);return}
+  const action=event.target.closest('[data-action]');if(!action)return;
+  const {action:kind,id}=action.dataset;
+  if(kind==='close-dialog'){dialog.close();return}
+  if(kind==='add-product'){openProduct('');return}
+  if(kind==='edit-product'){openProduct(id);return}
+  if(kind==='adjust-stock'){openStock(id);return}
+  if(kind==='import-csv'){document.getElementById('csvImport').click();return}
+  if(kind==='export-products'){exportProducts();showToast('Product CSV exported');logAction('Exported product catalog CSV');return}
+  if(kind==='export-report'){
+    const rows=[['order_id','date','customer','total','status'],...state.orders.map(o=>[o.id,o.date,o.customer,o.total,o.status])];
+    downloadFile('sales-report.csv',rows.map(row=>row.map(csvCell).join(',')).join('\r\n'),'text/csv');showToast('Report CSV exported');logAction('Exported sales report CSV');return;
+  }
+  if(kind==='delete-product'){
+    const product=state.products.find(p=>p.id===id);if(product&&confirm(`Delete ${product.name}?`)){state.products=state.products.filter(p=>p.id!==id);saveState();logAction(`Deleted product ${product.sku}`);navigate(currentPage)}return;
+  }
+  if(kind==='shipping-label'||kind==='invoice'){orderDocument(id,kind==='invoice');showToast('Demo document downloaded');return}
+  if(kind==='refund'){
+    const order=state.orders.find(o=>o.id===id);if(order){order.status='Refunded';order.returnRequested=false;saveState();logAction(`Marked demo order ${id} as refunded`);navigate(currentPage)}return;
+  }
+  if(kind==='customer-history'){
+    const customer=state.customers.find(c=>c.id===id);if(!customer)return;
+    const orders=state.orders.filter(o=>o.email===customer.email);
+    showDialog(`${customer.name} · order history`,orders.length?`<div class="table-wrap"><table><thead><tr><th>Order</th><th>Date</th><th>Total</th><th>Status</th></tr></thead><tbody>${orders.map(o=>`<tr><td>${esc(o.id)}</td><td>${esc(o.date)}</td><td>${money(o.total)}</td><td>${esc(o.status)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">No orders found for this customer.</div>');return;
+  }
+  if(kind==='toggle-customer'){
+    const customer=state.customers.find(c=>c.id===id);if(customer){customer.status=customer.status==='Active'?'Disabled':'Active';saveState();logAction(`${customer.status==='Active'?'Enabled':'Disabled'} customer account ${customer.email}`);navigate(currentPage)}return;
+  }
+  if(kind==='reset-password'){
+    const customer=state.customers.find(c=>c.id===id);if(customer){showToast(`Demo password-reset request recorded for ${customer.email}`);logAction(`Recorded demo password-reset request for ${customer.email}`)}return;
+  }
+  if(kind==='toggle-promo'){
+    const promo=state.promos.find(p=>p.id===id);if(promo){promo.active=!promo.active;saveState();logAction(`${promo.active?'Enabled':'Paused'} promo code ${promo.code}`);navigate(currentPage)}return;
+  }
+  if(kind==='delete-promo'){
+    state.promos=state.promos.filter(p=>p.id!==id);saveState();logAction(`Deleted promo code ${id}`);navigate(currentPage);return;
+  }
+  if(kind==='toggle-banner'){
+    const banner=state.banners.find(b=>b.id===id);if(banner){banner.active=!banner.active;saveState();logAction(`${banner.active?'Published':'Hid'} demo banner ${banner.title}`);navigate(currentPage)}return;
+  }
+  if(kind==='delete-banner'){
+    state.banners=state.banners.filter(b=>b.id!==id);saveState();logAction(`Deleted demo banner ${id}`);navigate(currentPage);return;
+  }
+  if(kind==='recover-cart'){
+    const cart=state.carts.find(c=>c.id===id);if(cart){cart.sent=true;saveState();logAction(`Queued demo cart recovery for ${cart.email}`);showToast('Reminder queued in demo mode');navigate(currentPage)}return;
+  }
+  if(kind==='delete-role'){
+    state.roles=state.roles.filter(role=>role.id!==id);saveState();logAction(`Removed demo role ${id}`);navigate(currentPage);
+  }
+});
+dialog.addEventListener('click',event=>{
+  if(event.target.closest('[data-action="close-dialog"]'))dialog.close();
+});
+document.querySelectorAll('.nav button').forEach(button=>button.addEventListener('click',()=>navigate(button.dataset.page)));
+content.addEventListener('change',event=>{
+  if(event.target.matches('[data-order-status]')){
+    const order=state.orders.find(item=>item.id===event.target.dataset.orderStatus);
+    if(order){order.status=event.target.value;order.returnRequested=order.status==='Return requested';saveState();logAction(`Updated order ${order.id} status to ${order.status}`);showToast('Order status updated');navigate(currentPage)}
+  }
+  if(event.target.id==='csvImport'&&event.target.files?.[0]){
+    const file=event.target.files[0];file.text().then(text=>{
+      const rows=parseCSV(text);if(rows.length<2){showToast('CSV needs a header row and at least one product');return}
+      const headers=rows.shift().map(header=>header.trim().toLowerCase());
+      const added=[];
+      rows.forEach(row=>{
+        const values=Object.fromEntries(headers.map((header,index)=>[header,(row[index]||'').trim()]));
+        const price=Number(values.price),stock=values.stock===''?0:Number(values.stock),threshold=values.threshold===''?5:Number(values.threshold);
+        if(!values.name||!values.sku||values.price===''||!Number.isFinite(price)||!Number.isInteger(stock)||stock<0||!Number.isInteger(threshold)||threshold<0)return;
+        added.push({id:`p-${Date.now()}-${added.length}`,name:values.name,sku:values.sku,category:values.category||'General',price,variants:values.variants||'',stock,threshold});
+      });
+      if(!added.length){showToast('No valid product rows found in CSV');return}
+      state.products.push(...added);saveState();logAction(`Imported ${added.length} products from CSV`);showToast(`${added.length} product${added.length===1?'':'s'} imported`);navigate('products');
+    }).catch(()=>showToast('Could not read the selected CSV file'));
+    event.target.value='';
+  }
+});
+content.addEventListener('input',event=>{
+  if(event.target.id==='customerSearch'){
+    const query=event.target.value.trim().toLowerCase();
+    content.querySelectorAll('[data-customer]').forEach(row=>row.hidden=!row.dataset.customer.includes(query));
+  }
+});
+function handleAdminSubmit(event){
+  const form=event.target;if(!(form instanceof HTMLFormElement))return;
+  event.preventDefault();const data=new FormData(form),formId=form.getAttribute('id');
+  if(formId==='productForm'){
+    const record={id:data.get('id')||`p-${Date.now()}`,name:String(data.get('name')).trim(),sku:String(data.get('sku')).trim(),category:String(data.get('category')).trim(),price:Number(data.get('price')),variants:String(data.get('variants')).trim(),stock:Number(data.get('stock')),threshold:Number(data.get('threshold'))};
+    if(!record.name||!record.sku||![record.price,record.stock,record.threshold].every(Number.isFinite)||record.price<0||!Number.isInteger(record.stock)||record.stock<0||!Number.isInteger(record.threshold)||record.threshold<0){showToast('Enter valid product details and non-negative values');return}
+    const duplicate=state.products.find(p=>p.sku.toLowerCase()===record.sku.toLowerCase()&&p.id!==record.id);if(duplicate){showToast('A product with this SKU already exists');return}
+    record.images=editingProductImages.slice();
+    const previousProducts=state.products,previousAudit=state.audit,index=state.products.findIndex(p=>p.id===record.id),action=index>=0?`Edited product ${record.sku}`:`Added product ${record.sku}`;
+    state.products=state.products.slice();if(index>=0)state.products[index]=record;else state.products.push(record);
+    state.audit=[{time:new Date().toLocaleString('en-IN'),actor:'Super Admin',action},...state.audit].slice(0,100);
+    if(!saveState()){state.products=previousProducts;state.audit=previousAudit;return}
+    dialog.close();navigate(currentPage);showToast('Product saved');return;
+  }
+  if(formId==='stockForm'){
+    const product=state.products.find(p=>p.id===data.get('id')),quantity=Number(data.get('quantity'));
+    if(!product||!Number.isInteger(quantity)||quantity<1){showToast('Enter a valid stock adjustment');return}
+    const next=Number(product.stock)+(data.get('direction')==='add'?quantity:-quantity);
+    if(next<0){showToast('Stock cannot be adjusted below zero');return}
+    product.stock=next;saveState();logAction(`Adjusted ${product.sku} stock by ${data.get('direction')==='add'?'+':'-'}${quantity}`);dialog.close();navigate(currentPage);showToast('Inventory adjusted');return;
+  }
+  if(formId==='promoForm'){
+    const code=String(data.get('code')).trim().toUpperCase(),value=Number(data.get('value'));
+    if(!code||!Number.isFinite(value)||value<1||(data.get('type')==='Percent'&&value>100)||state.promos.some(p=>p.code===code)){showToast('Enter a unique promo code and a valid discount value');return}
+    state.promos.push({id:`pr-${Date.now()}`,code,type:data.get('type'),value,uses:0,active:true});saveState();logAction(`Created promo code ${code}`);navigate(currentPage);showToast('Promo code added');return;
+  }
+  if(formId==='bannerForm'){
+    const title=String(data.get('title')).trim();if(!title){showToast('Enter a banner message');return}
+    state.banners.push({id:`b-${Date.now()}`,title,link:String(data.get('link')).trim()||'Shop now',active:true});saveState();logAction(`Created demo banner ${title}`);navigate(currentPage);showToast('Banner added');return;
+  }
+  if(formId==='financeForm'){
+    state.settings.gateway=data.get('gateway');state.finance.currency=data.get('currency');saveState();logAction(`Saved demo payment gateway setting: ${state.settings.gateway}`);navigate(currentPage);showToast('Demo gateway settings saved');return;
+  }
+  if(formId==='taxForm'){
+    const rate=Number(data.get('taxRate'));if(!Number.isFinite(rate)||rate<0||rate>100){showToast('Tax rate must be between 0 and 100');return}
+    state.finance.taxLabel=String(data.get('taxLabel')).trim();state.settings.tax=rate;saveState();logAction(`Updated demo ${state.finance.taxLabel} rate to ${rate}%`);navigate(currentPage);showToast('Tax rules saved in demo');return;
+  }
+  if(formId==='shippingForm'){
+    state.settings.zones=String(data.get('zones')).trim();saveState();logAction('Updated demo shipping zones');navigate(currentPage);showToast('Shipping zones saved in demo');return;
+  }
+  if(formId==='cmsForm'){
+    state.cms[data.get('page')]=String(data.get('body'));saveState();logAction(`Updated demo CMS page ${data.get('page')}`);navigate(currentPage);showToast('Page content saved in demo');return;
+  }
+  if(formId==='roleForm'){
+    const name=String(data.get('name')).trim();if(!name){showToast('Enter a role name');return}
+    state.roles.push({id:`r-${Date.now()}`,name,permissions:data.getAll('permissions')});saveState();logAction(`Created demo sub-admin role ${name}`);navigate(currentPage);showToast('Role saved in demo');
+  }
+}
+navigate(currentPage);
+</script>
+</body>
+</html>

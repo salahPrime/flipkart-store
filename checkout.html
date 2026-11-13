@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Order Summary | Flipkart</title>
+  <link rel="stylesheet" href="checkout.css">
+</head>
+<body>
+  <header class="checkout-header"><a class="logo" href="index.html" aria-label="Flipkart home"><span>➤f</span> Flipkart</a><div class="secure">🔒 Secure checkout</div></header>
+  <main class="checkout-layout">
+    <section class="checkout-main">
+      <div class="steps" aria-label="Checkout progress"><div class="step done"><span>✓</span><label>Address</label></div><i></i><div class="step current"><span>2</span><label>Order Summary</label></div><i></i><div class="step"><span>3</span><label>Payment</label></div></div>
+      <section class="address box"><div class="address-top"><strong>Deliver to:</strong><button class="outline" id="changeAddress">Change</button></div><strong class="recipient">Salahudheen <span>HOME</span></strong><p>Baithudheen house, GLPS Mundumuzhi, near Juma Masjid, Kozhikode District 673640</p><p class="phone">8281934987</p></section>
+      <section class="product box"><img class="product-image" src="https://rukminim2.flixcart.com/image/480/640/xif0q/t-shirt/v/k/l/m-brp-002-nan-original-imahnzrszssm4sbp.jpeg?q=90" alt="Brown polo T-shirt"><div class="product-info"><div class="product-name">HIGHLANDER Men Self Design Polo Neck Pure Cotton Brown T-Shirt</div><div class="rating"><span>★★★★★</span> <b>4.1</b><i>·</i> (15) <em>✦ Assured</em></div><div class="price-line"><b>↓64%</b><del>₹1,899</del><strong>₹684</strong></div><label class="qty">Qty: <select id="quantity" aria-label="Quantity"><option>1</option><option>2</option><option>3</option><option>4</option></select></label><div class="delivery">Delivery by Nov 19, Thu</div><div class="size-line">Size: <strong id="sizeValue">—</strong></div></div><label class="gst"><input type="checkbox"> Use GST Invoice</label></section>
+      <section class="open-box box"><div class="open-title"><span>📦</span><strong>Rest assured with Open Box Delivery</strong></div><p>Delivery agent will open the package so you can check for correct product, damage or missing items. Share OTP to accept the delivery. <a href="#why">Why?</a></p></section>
+      <p class="terms">By continuing with the order, you confirm that you are above 18 years of age, and you agree to the Flipkart’s <a href="#terms">Terms of Use</a> and <a href="#privacy">Privacy Policy</a></p>
+    </section>
+    <aside class="summary"><h1>Price Details</h1><div class="price-card"><div class="price-row"><span><u>Selling Price</u></span><span id="selling">₹1,899</span></div><div class="price-row"><span>Fees⌄</span><span>₹0</span></div><div class="price-row discount-row"><span>Discounts⌄</span><span id="discount">−₹1,215</span></div><div class="price-row total"><strong>Total Amount</strong><strong id="total">₹684</strong></div><div class="savings">✿ &nbsp;You'll save <strong id="saved">₹1,215</strong> on this order!</div></div><div class="sticky-buy"><div><del>₹1,899</del><strong id="stickyTotal">₹684</strong></div><button id="continue">Continue</button></div></aside>
+  </main>
+  <dialog id="addressDialog"><form method="dialog"><div class="dialog-head"><strong>Delivery address</strong><button class="x">×</button></div><label>Name<input value="Salahudheen"></label><label>Address<textarea>Baithudheen house, GLPS Mundumuzhi, near Juma Masjid, Kozhikode District 673640</textarea></label><label>Phone<input value="8281934987"></label><button class="save-address">Save address</button></form></dialog>
+  <div id="toast" role="status"></div>
+  <script>
+    const params=new URLSearchParams(location.search),size=params.get('size')||'M';document.getElementById('sizeValue').textContent=size;
+    const qty=document.getElementById('quantity'),price=684,original=1899,toast=document.getElementById('toast');
+    function updatePrice(){const total=price*Number(qty.value);document.getElementById('total').textContent=document.getElementById('stickyTotal').textContent='₹'+total.toLocaleString('en-IN');document.getElementById('discount').textContent='−₹'+((original-price)*Number(qty.value)).toLocaleString('en-IN');document.getElementById('saved').textContent='₹'+((original-price)*Number(qty.value)).toLocaleString('en-IN');document.getElementById('selling').textContent='₹'+(original*Number(qty.value)).toLocaleString('en-IN')}
+    qty.addEventListener('change',updatePrice);
+    document.getElementById('changeAddress').onclick=()=>document.getElementById('addressDialog').showModal();
+    document.getElementById('continue').onclick=()=>{toast.textContent='Payment step is ready for this demo order.';toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2600)};
+  </script>
+</body>
+</html>
