@@ -21,7 +21,7 @@
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 const KEY='flipkartStoreCart';
-const WHATSAPP_NUMBER='918281836891';
+const WHATSAPP_NUMBER='918281846891';
 const fallbackImage='https://rukminim2.flixcart.com/image/480/640/xif0q/t-shirt/v/k/l/m-brp-002-nan-original-imahnzrszssm4sbp.jpeg?q=90';
 const money=n=>'₹'+Number(n).toLocaleString('en-IN');
 function getItems(){try{const data=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(data)?data.filter(item=>item&&Number(item.quantity)>0&&Number(item.price)>=0):[]}catch{return []}}
